@@ -23,6 +23,7 @@ public class GiftService {
 
     public GiftRes chat(GiftReq req) {
         UUID requestId = UUID.randomUUID();
+        log.info("message: {}, sessionId: {}, requestId: {}", req.message(), req.sessionId(), requestId);
 
         String systemPrompt = """
                 당신은 선물 고민을 이야기하면 대화를 통해 적절히 선물을 추천해주는 도우미 입니다.
