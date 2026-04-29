@@ -8,7 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
@@ -48,6 +51,20 @@ class GiftServiceTest {
 
         // then
         assertThat(res.requestId()).isNotBlank();
+        assertThat(UUID.fromString(res.requestId())).isNotNull();
         assertThat(res.message()).isEqualTo("친구 생일 선물을 추천해드리겠습니다.");
+        assertThat(res.durationMs()).isGreaterThanOrEqualTo(0);
+    }
+
+    @Test
+    void ChatClient_호출_실패() {
+        // given
+        given(responseSpec.content()).willThrow(new RuntimeException("AI provider error"));
+
+        // when & then
+        assertThatThrownBy(() -> giftService.chat(new GiftReq("선물 추천", "sessionId-1")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("선물 추천에 실패했습니다")
+                .hasCauseInstanceOf(RuntimeException.class);
     }
 }

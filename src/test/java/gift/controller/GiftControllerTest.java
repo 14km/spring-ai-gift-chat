@@ -36,14 +36,16 @@ class GiftControllerTest {
     void 선물_질문_요청() throws Exception {
         // given
         var req = new GiftReq("친구의 생일 선물을 추천해주세요", "sessionId-1");
-        given(giftService.chat(any())).willReturn(new GiftRes("1", "친구의 선물은 이것을 추천드립니다.", 0));
+        given(giftService.chat(any())).willReturn(new GiftRes("11111111-1111-1111-1111-111111111111", "친구의 선물은 이것을 추천드립니다.", 123L));
 
         // when & then
         mockMvc.perform(post("/api/gift-chat")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("친구의 선물은 이것을 추천드립니다."));
+                .andExpect(jsonPath("$.requestId").value("11111111-1111-1111-1111-111111111111"))
+                .andExpect(jsonPath("$.message").value("친구의 선물은 이것을 추천드립니다."))
+                .andExpect(jsonPath("$.durationMs").value(123));
     }
 
     @Test
@@ -58,5 +60,43 @@ class GiftControllerTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
+    }
+
+    @Test
+    void message가_빈값이면_400() throws Exception {
+        // given
+        var req = new GiftReq("", "sessionId-1");
+
+        // when & then
+        mockMvc.perform(post("/api/gift-chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void message가_null이면_400() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/gift-chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sessionId\":\"sessionId-1\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 본문이_비어있으면_400() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/gift-chat")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 잘못된_JSON이면_400() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/gift-chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{invalid json"))
+                .andExpect(status().isBadRequest());
     }
 }
