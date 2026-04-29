@@ -3,10 +3,12 @@ package gift.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gift.dto.GiftReq;
 import gift.dto.GiftRes;
+import gift.exception.GlobalExceptionHandler;
 import gift.service.GiftService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = GiftController.class)
+@Import(GlobalExceptionHandler.class)
 class GiftControllerTest {
 
     @Autowired
@@ -53,6 +56,7 @@ class GiftControllerTest {
         mockMvc.perform(post("/api/gift-chat")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
     }
 }
