@@ -42,4 +42,4 @@ out/
 ### Mac OS ###
 .DS_Store
 
-application.local.properties
+application-local.properties
